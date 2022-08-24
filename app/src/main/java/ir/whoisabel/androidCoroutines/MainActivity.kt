@@ -3,12 +3,9 @@ package ir.whoisabel.androidCoroutines
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import ir.whoisabel.androidCoroutines.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,6 +13,7 @@ class MainActivity : AppCompatActivity() {
 
     private val RESULT_1 = "RESULT #1"
     private val RESULT_2 = "RESULT #2"
+    private val JOB_TIMEOUT = 2100L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,20 +37,30 @@ class MainActivity : AppCompatActivity() {
         binding.text.text = newText
     }
 
-    private suspend fun setTextOnMainThread(input: String){
-        withContext(Main){
+    private suspend fun setTextOnMainThread(input: String) {
+        withContext(Main) {
             setNewText(input)
         }
     }
 
     private suspend fun fakeApiResult() {
-        val result1 = getResult1FromApi()
-        println("debug: $result1")
-        setTextOnMainThread(result1)
+        withContext(IO) {
+            val job = withTimeoutOrNull(JOB_TIMEOUT) {
+                val result1 = getResult1FromApi()
+                println("debug: $result1")
+                setTextOnMainThread(result1)
 
-        val result2 = getResult2FromApi()
-        println("debug: $result2")
-        setTextOnMainThread(result2)
+                val result2 = getResult2FromApi()
+                println("debug: $result2")
+                setTextOnMainThread(result2)
+            }
+
+            if (job == null) {
+                val cancelMessage = "Cancelling job ... Job took longer than $JOB_TIMEOUT ms"
+                println("debug: $cancelMessage")
+                setTextOnMainThread(cancelMessage)
+            }
+        }
     }
 
     private suspend fun getResult1FromApi(): String {
