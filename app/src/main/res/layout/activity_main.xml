@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Click me"
@@ -23,7 +23,7 @@
             app:layout_constraintVertical_bias=".1"
             android:id="@+id/button" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -31,6 +31,16 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button"
             android:id="@+id/text" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kotlin Coroutine Jobs"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintVertical_bias=".1"
+            android:id="@+id/btn_start_other_activity" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

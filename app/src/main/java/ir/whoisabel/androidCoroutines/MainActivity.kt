@@ -1,5 +1,6 @@
 package ir.whoisabel.androidCoroutines
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import ir.whoisabel.androidCoroutines.databinding.ActivityMainBinding
@@ -29,6 +30,10 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(IO).launch {
                 fakeApiResult()
             }
+        }
+
+        binding.btnStartOtherActivity.setOnClickListener {
+            startActivity(Intent(this, KotlinCoroutineJobsActivity::class.java))
         }
     }
 
