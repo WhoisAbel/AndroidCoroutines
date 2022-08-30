@@ -7,6 +7,7 @@ import ir.whoisabel.androidCoroutines.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,8 +29,10 @@ class MainActivity : AppCompatActivity() {
         binding.button.setOnClickListener {
             // IO, Main, Default
             CoroutineScope(IO).launch {
-                fakeApiResult()
+                //fakeApiResult()
             }
+            //fakeApiResultForWorkingWithLaunch()
+            fakeApiResultForWorkingWithAsync()
         }
 
         binding.btnStartOtherActivity.setOnClickListener {
@@ -45,6 +48,57 @@ class MainActivity : AppCompatActivity() {
     private suspend fun setTextOnMainThread(input: String) {
         withContext(Main) {
             setNewText(input)
+        }
+    }
+
+    // launch
+    private fun fakeApiResultForWorkingWithLaunch() {
+        val startTime = System.currentTimeMillis()
+        val parentJob = CoroutineScope(IO).launch {
+            val job1 = launch {
+                val time1 = measureTimeMillis {
+                    println("debug: launching job1 in thread: ${Thread.currentThread().name}")
+                    setTextOnMainThread("Got ${getResult1FromApi()}")
+                }
+                println("debug: compeleted job1 in $time1 ms.")
+            }
+            job1.join()
+
+            val job2 = launch {
+                val time2 = measureTimeMillis {
+                    println("debug: launching job2 in thread: ${Thread.currentThread().name}")
+                    setTextOnMainThread("Got ${getResult2FromApi()}")
+                }
+                println("debug: compeleted job2 in $time2 ms.")
+            }
+            job2.join()
+        }
+        parentJob.invokeOnCompletion {
+            println("debug: Total time is  ${System.currentTimeMillis() - startTime} ms.")
+        }
+
+    }
+
+    // async
+    private fun fakeApiResultForWorkingWithAsync() {
+        CoroutineScope(IO).launch {
+            val executionTime = measureTimeMillis {
+                val result1: Deferred<String> = async {
+                    println("debug: launching job1: ${Thread.currentThread().name}")
+                    getResult1FromApi()
+                }
+
+                val result2: Deferred<String> = async {
+                    println("debug: launching job2: ${Thread.currentThread().name}")
+                    getResult2FromApi()
+                }
+
+                setTextOnMainThread("Got ${result1.await()}")
+                setTextOnMainThread("Got ${result2.await()}")
+            }
+
+            println("debug: Total time is  $executionTime ms.")
+
         }
     }
 
