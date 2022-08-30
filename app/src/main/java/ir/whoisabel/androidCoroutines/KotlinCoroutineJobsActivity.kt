@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import ir.whoisabel.androidCoroutines.databinding.ActivityKotlinCoroutineJobsBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -75,13 +76,13 @@ class KotlinCoroutineJobsActivity : AppCompatActivity() {
     }
 
     private fun updateJobCompleteTextView(text: String) {
-        GlobalScope.launch(Main) {
+        lifecycleScope.launch(Main) {
             binding.jobCompleteText.text = text
         }
     }
 
     private fun showToast(text: String?) {
-        GlobalScope.launch(Main) {
+        lifecycleScope.launch(Main) {
             Toast.makeText(this@KotlinCoroutineJobsActivity, text, Toast.LENGTH_SHORT).show()
         }
     }
