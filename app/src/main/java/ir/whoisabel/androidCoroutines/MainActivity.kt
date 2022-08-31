@@ -108,6 +108,11 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(IO).launch {
             val executionTime = measureTimeMillis {
 
+                //Coroutines will FREEZE your UI
+                withContext(Main){
+                    delay(7000)
+                    println("debug: Coroutines will FREEZE your UI: ${Thread.currentThread().name}")
+                }
                 /*
                 withContext(Dispatchers.Default) {
                         println("debug: launching job1: ${Thread.currentThread().name}")
