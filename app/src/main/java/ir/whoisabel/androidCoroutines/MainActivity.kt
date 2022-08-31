@@ -7,6 +7,7 @@ import ir.whoisabel.androidCoroutines.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
@@ -33,8 +34,9 @@ class MainActivity : AppCompatActivity() {
             }
             //fakeApiResultForWorkingWithLaunch()
             //fakeApiResultForWorkingWithAsync()
-            fakeApiResultForSequential()
+            //fakeApiResultForSequential()
         }
+        testRunBlocking()
 
         binding.btnStartOtherActivity.setOnClickListener {
             startActivity(Intent(this, KotlinCoroutineJobsActivity::class.java))
@@ -109,7 +111,7 @@ class MainActivity : AppCompatActivity() {
             val executionTime = measureTimeMillis {
 
                 //Coroutines will FREEZE your UI
-                withContext(Main){
+                withContext(Main) {
                     delay(7000)
                     println("debug: Coroutines will FREEZE your UI: ${Thread.currentThread().name}")
                 }
@@ -141,6 +143,46 @@ class MainActivity : AppCompatActivity() {
             }
             println("debug: total time is $executionTime")
         }
+    }
+
+    //WTF is runBlocking{} in Kotlin Coroutines
+    private fun testRunBlocking() {
+
+        // job #1
+        CoroutineScope(Main).launch {
+            println("debug: Starting jon in thread: ${Thread.currentThread().name}")
+
+            val result1 = getResult()
+            println("debug: $result1")
+
+            val result2 = getResult()
+            println("debug: $result2")
+
+            val result3 = getResult()
+            println("debug: $result3")
+
+            val result4 = getResult()
+            println("debug: $result4")
+
+            val result5 = getResult()
+            println("debug: $result5")
+        }
+
+        // job #2
+        CoroutineScope(Main).launch {
+           delay(1000)
+            runBlocking {
+                println("debug: Blocking Thread ${Thread.currentThread().name}")
+                delay(4000)
+                println("debug: Done blocking Thread ${Thread.currentThread().name}")
+
+            }
+        }
+    }
+
+    private suspend fun getResult(): Int {
+        delay(1000)
+        return Random.nextInt(0, 1000)
     }
 
     private suspend fun fakeApiResult() {
