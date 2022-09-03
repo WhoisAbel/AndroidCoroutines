@@ -36,7 +36,8 @@ class MainActivity : AppCompatActivity() {
             //fakeApiResultForWorkingWithAsync()
             //fakeApiResultForSequential()
         }
-        testRunBlocking()
+        //testRunBlocking()
+        structuredConcurrency()
 
         binding.btnStartOtherActivity.setOnClickListener {
             startActivity(Intent(this, KotlinCoroutineJobsActivity::class.java))
@@ -145,7 +146,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //WTF is runBlocking{} in Kotlin Coroutines
+    // WTF is runBlocking{} in Kotlin Coroutines
     private fun testRunBlocking() {
 
         // job #1
@@ -170,7 +171,7 @@ class MainActivity : AppCompatActivity() {
 
         // job #2
         CoroutineScope(Main).launch {
-           delay(1000)
+            delay(1000)
             runBlocking {
                 println("debug: Blocking Thread ${Thread.currentThread().name}")
                 delay(4000)
@@ -178,6 +179,77 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    // Coroutine Structured Concurrency, Error Handling and Exceptions
+
+    // Note: The handler can not be used on the children.
+    private val handler = CoroutineExceptionHandler { _, exception ->
+        println("debug: Exception thrown in one of the children $exception")
+    }
+
+    private fun structuredConcurrency() {
+
+        val parentJob = CoroutineScope(IO).launch(handler) {
+
+            // ------------- Job A --------------
+            val jobA = launch {
+                val resultA = getResult(1)
+                println("debug: result: $resultA")
+            }
+
+            jobA.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    println("debug: Error getting resultA: $throwable")
+                }
+            }
+
+            // ------------- Job B --------------
+            val jobB = launch {
+                val resultB = getResult(2)
+                println("debug: result: $resultB")
+            }
+
+           // jobB.cancel()
+
+            jobB.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    println("debug: Error getting resultA: $throwable")
+                }
+            }
+
+            // ------------- Job C --------------
+            val jobC = launch {
+                val resultC = getResult(3)
+                println("debug: result: $resultC")
+            }
+
+            jobC.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    println("debug: Error getting resultA: $throwable")
+                }
+            }
+
+        }
+
+        parentJob.invokeOnCompletion { throwable ->
+            if (throwable != null) {
+                println("debug: Parent job failed $throwable")
+            } else {
+                println("debug: Parent job Success.")
+            }
+
+        }
+
+    }
+
+    private suspend fun getResult(number: Int): Int {
+        delay(number * 500L)
+        if (number == 2)
+            throw CancellationException("Error getting result for number $number")
+            //throw Exception("Error getting result for number $number")
+
+        return number * 2
     }
 
     private suspend fun getResult(): Int {
