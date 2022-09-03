@@ -192,43 +192,46 @@ class MainActivity : AppCompatActivity() {
 
         val parentJob = CoroutineScope(IO).launch(handler) {
 
-            // ------------- Job A --------------
-            val jobA = launch {
-                val resultA = getResult(1)
-                println("debug: result: $resultA")
-            }
+            supervisorScope {
+                // ------------- Job A --------------
+                val jobA = launch {
+                    val resultA = getResult(1)
+                    println("debug: result: $resultA")
+                }
 
-            jobA.invokeOnCompletion { throwable ->
-                if (throwable != null) {
-                    println("debug: Error getting resultA: $throwable")
+                jobA.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        println("debug: Error getting resultA: $throwable")
+                    }
+                }
+
+                // ------------- Job B --------------
+                val jobB = launch {
+                    val resultB = getResult(2)
+                    println("debug: result: $resultB")
+                }
+
+                // jobB.cancel()
+
+                jobB.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        println("debug: Error getting resultA: $throwable")
+                    }
+                }
+
+                // ------------- Job C --------------
+                val jobC = launch {
+                    val resultC = getResult(3)
+                    println("debug: result: $resultC")
+                }
+
+                jobC.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        println("debug: Error getting resultA: $throwable")
+                    }
                 }
             }
 
-            // ------------- Job B --------------
-            val jobB = launch {
-                val resultB = getResult(2)
-                println("debug: result: $resultB")
-            }
-
-           // jobB.cancel()
-
-            jobB.invokeOnCompletion { throwable ->
-                if (throwable != null) {
-                    println("debug: Error getting resultA: $throwable")
-                }
-            }
-
-            // ------------- Job C --------------
-            val jobC = launch {
-                val resultC = getResult(3)
-                println("debug: result: $resultC")
-            }
-
-            jobC.invokeOnCompletion { throwable ->
-                if (throwable != null) {
-                    println("debug: Error getting resultA: $throwable")
-                }
-            }
 
         }
 
@@ -246,8 +249,8 @@ class MainActivity : AppCompatActivity() {
     private suspend fun getResult(number: Int): Int {
         delay(number * 500L)
         if (number == 2)
-            throw CancellationException("Error getting result for number $number")
-            //throw Exception("Error getting result for number $number")
+           // throw CancellationException("Error getting result for number $number")
+            throw Exception("Error getting result for number $number")
 
         return number * 2
     }
